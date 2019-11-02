@@ -8,6 +8,11 @@ enum my_layers {
     _ADJUST
 };
 
+enum my_codes {
+    QWERTY = SAFE_RANGE,
+    ENT_QUO
+};
+
 #define SPC_NUM LT(_NUMS, KC_SPC)
 #define SPC_MM LT(_MAUSMED, KC_SPC)
 #define FUNCS MO(_FUNCS)
@@ -16,7 +21,7 @@ enum my_layers {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT_arrow( /* Qwerty */
     KC_GESC,    KC_Q,    KC_W,    KC_E,  KC_R, KC_T,   KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC,
-    KC_TAB,     KC_A,    KC_S,    KC_D,  KC_F, KC_G,   KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_ENT,
+    KC_TAB,     KC_A,    KC_S,    KC_D,  KC_F, KC_G,   KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, ENT_QUO,
     KC_LSFT,    KC_Z,    KC_X,    KC_C,  KC_V, KC_B,   KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_UP,   KC_SLSH,
     KC_LCTL,    KC_LGUI, KC_LALT,        SPC_NUM,      SPC_MM,        FUNCS,   KC_LEFT, KC_DOWN, KC_RIGHT
   ),
@@ -45,11 +50,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     AG_TOGG, KC_TRNS, KC_TRNS,                   KC_TRNS,  KC_TRNS,          KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
   )
 };
-
-void persistent_default_layer_set(uint16_t default_layer) {
-  eeconfig_update_default_layer(default_layer);
-  default_layer_set(default_layer);
-}
 
 void keyboard_post_init_user(void) {
   #ifdef RGBLIGHT_ENABLE
@@ -88,3 +88,21 @@ uint32_t layer_state_set_user(uint32_t state){
   return state;
 }
 
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case ENT_QUO:
+      if (record->event.pressed) {
+        uint8_t shifted = get_mods() & (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT));
+        if (shifted) {
+            uint8_t mods = get_mods();
+            clear_mods();
+            tap_code(KC_QUOT);
+            set_mods(mods);
+        } else {
+            tap_code(KC_ENT);
+        }
+      }
+      return false;
+  }
+  return true;
+}
